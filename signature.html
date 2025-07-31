@@ -57,7 +57,7 @@
 
     function submitSignature() {
       const image = canvas.toDataURL("image/png");
-      fetch("https://script.google.com/macros/s/REPLACE_ME_WITH_WEB_APP_URL/exec", {
+      fetch("https://script.google.com/macros/s/AKfycbzsi6sHAm8Xome9uB3E0DZTyDNlm4BJDCn8YAFq-zlI-FCOThazM0EeoDL-JpE9BO4/exec", {
         method: "POST",
         body: JSON.stringify({ signature: image, contract }),
       }).then(res => res.json())
