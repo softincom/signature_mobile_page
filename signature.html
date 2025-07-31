@@ -1,0 +1,76 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Подпись договора</title>
+  <style>
+    body { font-family: sans-serif; margin: 10px; }
+    canvas { border: 1px solid #ccc; width: 100%; height: 200px; touch-action: none; }
+    button { margin-top: 10px; padding: 10px; font-size: 16px; width: 100%; }
+  </style>
+</head>
+<body>
+  <h3>Подпись для договора № <span id="contractId">?</span></h3>
+  <canvas id="signature"></canvas>
+  <button onclick="clearCanvas()">Очистить</button>
+  <button onclick="submitSignature()">Отправить подпись</button>
+
+  <script>
+    const canvas = document.getElementById('signature');
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+
+    // Устанавливаем параметры отображения для мобильных
+    function resizeCanvas() {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = 200;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Получаем номер договора из URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const contract = urlParams.get('contract') || 'неизвестен';
+    document.getElementById("contractId").innerText = contract;
+
+    canvas.addEventListener('pointerdown', e => {
+      drawing = true;
+      ctx.beginPath();
+      ctx.moveTo(e.offsetX, e.offsetY);
+    });
+
+    canvas.addEventListener('pointermove', e => {
+      if (!drawing) return;
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.stroke();
+    });
+
+    canvas.addEventListener('pointerup', () => drawing = false);
+    canvas.addEventListener('pointerleave', () => drawing = false);
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function submitSignature() {
+      const image = canvas.toDataURL("image/png");
+      fetch("https://script.google.com/macros/s/REPLACE_ME_WITH_WEB_APP_URL/exec", {
+        method: "POST",
+        body: JSON.stringify({ signature: image, contract }),
+      }).then(res => res.json())
+        .then(data => {
+          if (data.status === 'ok') {
+            alert("Подпись отправлена успешно!");
+            window.location.href = data.url;
+          } else {
+            alert("Ошибка: " + data.message);
+          }
+        })
+        .catch(err => alert("Ошибка отправки: " + err));
+    }
+  </script>
+</body>
+</html>
